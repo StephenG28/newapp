@@ -1,0 +1,50 @@
+version: '3.5'
+services:
+  mysql:
+    image: mysql
+    command:  --default-authentication-plugin=mysql_native_password
+    restart: on-failure
+    environment:
+      MYSQL_DATABASE: 'backend_demo'
+      MYSQL_ROOT_PASSWORD: 'Ainch'
+    ports:
+      - '3306:3306'
+    security_opt:
+      - seccomp:unconfined
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-pAinch"]
+      interval: 30s
+      timeout: 10s
+    networks:
+      - externalnetwork
+    volumes:
+      - ./mysql-data-backup:/var/lib/mysql/
+  nodejs:
+    depends_on: 
+      mysql:
+          condition: service_healthy
+    build: .
+    volumes:
+      - ./config/:/background-demo/config
+    ports:
+      - '51005:51005'
+    environment:
+      host: localhost
+      name: 'backend_demo'
+      user: 'root'
+      password: 'password'
+    restart: on-failure
+    networks:
+      - externalnetwork
+  mongodb:
+    image: mongo:3.6.8
+    environment:
+      MONGO_INITDB_DATABASE: 'backend_demo'
+    ports:
+      - '27017:27017'
+    networks:
+      - externalnetwork
+    volumes:
+      - ./mongo-data-backup:/data/db
+networks:
+  externalnetwork:

@@ -1,0 +1,28 @@
+version: '3.5'
+services:
+  nodejs:
+    build: .
+    volumes:
+      - ./config/:/background-demo/config
+    ports:
+      - '51005:51005'
+    environment:
+      host: localhost
+      name: 'backend_demo'
+      user: 'root'
+      password: 'password'
+    restart: on-failure
+    networks:
+      - externalnetwork
+  mongodb:
+    image: mongo:3.6.8
+    environment:
+      MONGO_INITDB_DATABASE: 'backend_demo'
+    ports:
+      - '27017:27017'
+    networks:
+      - externalnetwork
+    volumes:
+      - ./mongo-data-backup:/data/db
+networks:
+  externalnetwork:
